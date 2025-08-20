@@ -72,7 +72,7 @@ resource "aws_instance" "web" {
   key_name               = var.key_name
 
   # Proper path reference
-  user_data = file("${path.module}/scripts/user-data.sh")
+  user_data = file("${path.module}/user-data.sh")
 
   tags = {
     Name = "TerraformWebServer"
