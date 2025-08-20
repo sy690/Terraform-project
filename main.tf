@@ -1,41 +1,18 @@
 # VPC
-# Default provider
-provider "aws" {
-  region = "ap-south-1"
-}
-
-# Second provider with alias
-provider "aws" {
-  alias  = "use1"
-  region = "us-east-1"
-}
-
-
-# VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
-  tags = {
-    Name = "Terraform-VPC"
-  }
 }
 
-# Subnet
 resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "ap-south-1a"
-  map_public_ip_on_launch = true   # ✅ ensures EC2 gets public IP
-  tags = {
-    Name = "Terraform-Public-Subnet"
-  }
+  vpc_id            = aws_vpc.main.id   # ✅ reference Terraform VPC
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "ap-south-1a"
 }
+
 
 # Internet Gateway
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
-  tags = {
-    Name = "Terraform-IGW"
-  }
 }
 
 # Route Table
@@ -46,13 +23,8 @@ resource "aws_route_table" "rt" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
   }
-
-  tags = {
-    Name = "Terraform-Route-Table"
-  }
 }
 
-# Associate Route Table with Subnet
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.rt.id
@@ -86,20 +58,17 @@ resource "aws_security_group" "web_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = {
-    Name = "Terraform-SG"
-  }
 }
 
 # EC2 Instance
 resource "aws_instance" "web" {
-  ami                    = "ami-05295b6e6c790593e" # ✅ Amazon Linux 2 for ap-south-1
+  ami                    = "ami-05295b6e6c790593e" # Amazon Linux 2
   instance_type          = var.instance_type
-  subnet_id              = aws_subnet.public_subnet.id
+    subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = var.key_name
 
+  # Proper path reference
   user_data = file("${path.module}/user-data.sh")
 
   tags = {
@@ -110,13 +79,15 @@ resource "aws_instance" "web" {
 # S3 Bucket
 resource "aws_s3_bucket" "static_files" {
   bucket = var.bucket_name
-  force_destroy = true   # ✅ allows destroy even if bucket not empty
-  tags = {
-    Name = "Terraform-S3"
-  }
 }
 
-# S3 Bucket Policy (Public Read)
+# Attach ACL separately (fix for deprecation)
+# resource "aws_s3_bucket_acl" "static_files_acl" {
+#   bucket = aws_s3_bucket.static_files.id
+#   acl    = "public-read"
+# }
+
+# Public bucket policy
 resource "aws_s3_bucket_policy" "public_policy" {
   bucket = aws_s3_bucket.static_files.id
 
