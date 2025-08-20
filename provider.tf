@@ -1,5 +1,3 @@
 provider "aws" {
-  region = "us-east-1"
-  # Remove profile if using AWS CloudShell or IAM Role
-  # profile = "default"
+  region = "ap-south-1"   # or whatever region you want
 }
