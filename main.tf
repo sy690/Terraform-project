@@ -1,16 +1,14 @@
 # VPC
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+  cidr_block = "10.0.0.0/16"
 }
 
-# Subnet
 resource "aws_subnet" "public_subnet" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "ap-south-1a"
 }
+
 
 # Internet Gateway
 resource "aws_internet_gateway" "gw" {
