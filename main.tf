@@ -85,10 +85,10 @@ resource "aws_s3_bucket" "static_files" {
 }
 
 # Attach ACL separately (fix for deprecation)
-resource "aws_s3_bucket_acl" "static_files_acl" {
-  bucket = aws_s3_bucket.static_files.id
-  acl    = "public-read"
-}
+# resource "aws_s3_bucket_acl" "static_files_acl" {
+#   bucket = aws_s3_bucket.static_files.id
+#   acl    = "public-read"
+# }
 
 # Public bucket policy
 resource "aws_s3_bucket_policy" "public_policy" {
