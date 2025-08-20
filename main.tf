@@ -71,7 +71,8 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = var.key_name
 
-  user_data = file("user-data.sh")
+  # Proper path reference
+  user_data = file("${path.module}/scripts/user-data.sh")
 
   tags = {
     Name = "TerraformWebServer"
@@ -83,9 +84,26 @@ resource "aws_s3_bucket" "static_files" {
   bucket = var.bucket_name
 }
 
+# Attach ACL separately (fix for deprecation)
 resource "aws_s3_bucket_acl" "static_files_acl" {
   bucket = aws_s3_bucket.static_files.id
   acl    = "public-read"
 }
 
-  
+# Public bucket policy
+resource "aws_s3_bucket_policy" "public_policy" {
+  bucket = aws_s3_bucket.static_files.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = ["s3:GetObject"]
+        Resource  = ["${aws_s3_bucket.static_files.arn}/*"]
+      }
+    ]
+  })
+}
