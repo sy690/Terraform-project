@@ -4,7 +4,7 @@ variable "instance_type" {
 
 variable "key_name" {
   description = "EC2 Key Pair name"
-  default     = "my-key"
+  default     = "rsa"
 }
 
 variable "bucket_name" {
