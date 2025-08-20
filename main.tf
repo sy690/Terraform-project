@@ -6,11 +6,10 @@ resource "aws_vpc" "main" {
 }
 
 # Subnet
-resource "aws_subnet" "main" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = true
+resource "aws_subnet" "public_subnet" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "ap-south-1a"
 }
 
 # Internet Gateway
@@ -29,7 +28,7 @@ resource "aws_route_table" "rt" {
 }
 
 resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.main.id
+  subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -67,7 +66,7 @@ resource "aws_security_group" "web_sg" {
 resource "aws_instance" "web" {
   ami                    = "ami-05295b6e6c790593e" # Amazon Linux 2
   instance_type          = var.instance_type
-  subnet_id              = aws_subnet.main.id
+    subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = var.key_name
 
